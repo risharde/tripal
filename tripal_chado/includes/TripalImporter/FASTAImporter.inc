@@ -975,6 +975,8 @@ class FASTAImporter extends TripalImporter {
 
       // If we've read in enough of the sequence then append it to the database.
       if ($chunk_intv_read >= $chunk_size) {
+        // ORIGINAL CODE FROM TRIPAL 7.x-3.x REPO
+        /*
         $sql = "
           UPDATE {feature}
           SET residues = residues || :chunk
@@ -984,6 +986,19 @@ class FASTAImporter extends TripalImporter {
           ':feature_id' => $feature_id,
           ':chunk' => $chunk,
         ]);
+        */
+
+        // NEW CODE FOR TREEGENES TO STOP STORING THE SEQUENCES (RESIDUES) IN THE DATABASE
+        $sql = "
+            UPDATE {feature}
+            SET residues = :chunk
+            WHERE feature_id = :feature_id
+          ";
+        $success = chado_query($sql, [
+          ':feature_id' => $feature_id,
+          ':chunk' => '',
+        ]);
+
         if (!$success) {
           return FALSE;
         }
@@ -1000,6 +1015,8 @@ class FASTAImporter extends TripalImporter {
 
     // write the last bit of sequence if it remains
     if (strlen($chunk) > 0) {
+      // ORIGINAL CODE FROM TRIPAL 7.x-3.x REPO
+      /*
       $sql = "
           UPDATE {feature}
           SET residues = residues || :chunk
@@ -1008,6 +1025,18 @@ class FASTAImporter extends TripalImporter {
       $success = chado_query($sql, [
         ':feature_id' => $feature_id,
         ':chunk' => $chunk,
+      ]);
+      */
+
+      // NEW CODE FOR TREEGENES TO STOP STORING THE SEQUENCES (RESIDUES) IN THE DATABASE
+      $sql = "
+          UPDATE {feature}
+          SET residues = :chunk
+          WHERE feature_id = :feature_id
+        ";
+      $success = chado_query($sql, [
+        ':feature_id' => $feature_id,
+        ':chunk' => '',
       ]);
       if (!$success) {
         return FALSE;
